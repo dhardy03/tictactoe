@@ -46,6 +46,12 @@ public class Controller implements Initializable {
 
         ArrayList<Button> buttons;
 
+        private static final int[][] LINES = {
+                {0, 1, 2}, {3, 4, 5}, {6, 7, 8},
+                {0, 4, 8}, {2, 4, 6},
+                {0, 3, 6}, {1, 4, 7}, {2, 5, 8}
+        };
+
 
         @Override
         public void initialize(URL url, ResourceBundle resourceBundle) {
@@ -60,6 +66,7 @@ public class Controller implements Initializable {
         @FXML
         void restartGame() {
             buttons.forEach(this::resetButton);
+            playerTurn = 0;
             winnerText.setText("Tic-Tac-Toe");
         }
 
@@ -79,36 +86,31 @@ public class Controller implements Initializable {
         public void setPlayerSymbol(Button button){
             if(playerTurn % 2 == 0){
                 button.setText("X");
-                playerTurn = 1;
             } else{
                 button.setText("O");
-                playerTurn = 0;
             }
+            playerTurn++;
         }
 
         public void checkIfGameIsOver(){
-            for (int a = 0; a < 8; a++) {
-                String line = switch (a) {
-                    case 0 -> button1.getText() + button2.getText() + button3.getText();
-                    case 1 -> button4.getText() + button5.getText() + button6.getText();
-                    case 2 -> button7.getText() + button8.getText() + button9.getText();
-                    case 3 -> button1.getText() + button5.getText() + button9.getText();
-                    case 4 -> button3.getText() + button5.getText() + button7.getText();
-                    case 5 -> button1.getText() + button4.getText() + button7.getText();
-                    case 6 -> button2.getText() + button5.getText() + button8.getText();
-                    case 7 -> button3.getText() + button6.getText() + button9.getText();
-                    default -> null;
-                };
-
-                //X winner
-                if (line.equals("XXX")) {
-                    winnerText.setText("X won!");
-                }
-
-                //O winner
-                else if (line.equals("OOO")) {
-                    winnerText.setText("O won!");
+            for (int[] line : LINES) {
+                String first = buttons.get(line[0]).getText();
+                if (!first.isEmpty()
+                        && first.equals(buttons.get(line[1]).getText())
+                        && first.equals(buttons.get(line[2]).getText())) {
+                    winnerText.setText(first + " won!");
+                    endGame();
+                    return;
                 }
             }
+
+            if (buttons.stream().allMatch(button -> !button.getText().isEmpty())) {
+                winnerText.setText("It's a draw!");
+                endGame();
+            }
+        }
+
+        private void endGame() {
+            buttons.forEach(button -> button.setDisable(true));
         }
     }
